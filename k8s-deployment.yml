@@ -1,0 +1,114 @@
+# =============================================================================
+# Kubernetes Deployment Template -- Pipeline with Licensing v3.0
+# =============================================================================
+# Usage:
+#   1. Create license secret:
+#      kubectl create secret generic pipeline-license \
+#        --from-file=license-key=licence/License/license.key
+#
+#   2. Deploy:
+#      kubectl apply -f k8s-deployment.yml
+# =============================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pipeline
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pipeline-license
+  namespace: pipeline
+type: Opaque
+# Created via: kubectl create secret generic pipeline-license --from-file=license-key=license.key
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipeline
+  namespace: pipeline
+  labels:
+    app: pipeline
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pipeline
+  template:
+    metadata:
+      labels:
+        app: pipeline
+    spec:
+      containers:
+        - name: pipeline
+          image: your-registry/pipeline:latest
+          ports:
+            - containerPort: 8080
+          env:
+            # Use node name as HWID (unique per K8s node)
+            - name: LICENSE_HWID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            # Optional phone-home URL
+            - name: PHONE_HOME_URL
+              value: ""
+          volumeMounts:
+            - name: license-data
+              mountPath: /app/licence/data
+            - name: license-key
+              mountPath: /app/licence/License/license.key
+              subPath: license-key
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+      volumes:
+        - name: license-data
+          persistentVolumeClaim:
+            claimName: pipeline-license-data
+        - name: license-key
+          secret:
+            secretName: pipeline-license
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pipeline-license-data
+  namespace: pipeline
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pipeline
+  namespace: pipeline
+spec:
+  selector:
+    app: pipeline
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

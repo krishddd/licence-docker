@@ -1,0 +1,59 @@
+# =============================================================================
+# Docker Compose -- Pipeline with Licensing v3.2 (Security Hardened)
+# =============================================================================
+# Usage:
+#   docker-compose up -d        # Start
+#   docker-compose logs -f      # View logs
+#   docker-compose restart      # Restart (license persists)
+#   docker-compose down         # Stop (license persists in volume)
+#   docker-compose down -v      # Stop + delete license data
+#
+# License Renewal:
+#   1. Drop new license.key into ./licence/License/ on the host
+#   2. docker-compose restart
+#
+# v3.2 Breaking Changes:
+#   - PHONE_HOME_URL is now REQUIRED (blocks license sharing across machines)
+#   - LICENSE_HWID is RESTRICTED to Kubernetes environments only
+#   - If using LICENSE_HWID, you MUST also set LICENSE_HWID_SIG (RSA-signed by vendor)
+#   - For Docker Desktop/WSL2: use bind mounts (machine-id + dmi) instead
+#   - NTP is now strictly enforced (48h cached grace, then requires connectivity)
+# =============================================================================
+
+services:
+  pipeline:
+    image: pipeline:latest
+    container_name: pipeline
+    ports:
+      - "8080:8080"
+    volumes:
+      # Persistent license activation data (survives restarts)
+      # Maps to /app/data inside container (NTP cache + HWID history + activation)
+      - license_data:/app/data
+      # Host hardware ID sources (read-only bind mounts)
+      - /etc/machine-id:/host/machine-id:ro
+      - /sys/class/dmi/id:/host/dmi:ro
+      # LICENSE RENEWAL: mount host directory so vendor can drop new license.key
+      # Path is relative to docker-compose.yml location
+      - ./License:/app/License
+    environment:
+      # App settings
+      - APP_MODULE=app:app
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8080
+      # License settings (v3.2)
+      # LICENSE_HWID is RESTRICTED to Kubernetes only (requires RSA signature)
+      # For standard Docker: use bind mounts above instead
+      - LICENSE_HWID=${LICENSE_HWID:-}
+      - LICENSE_HWID_SIG=${LICENSE_HWID_SIG:-}    # RSA signature of LICENSE_HWID (vendor-signed)
+      - PHONE_HOME_URL=http://host.docker.internal:8000/api/license/beacon    # REQUIRED: License anti-fraud beacon (no default)
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  license_data:
+    driver: local

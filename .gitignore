@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+
+# Docker
+*.log
+
+# Claude / extra IDE
+.claude/
+
+# Secrets (critical)
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+keys/
+client_secret*.json
+credentials.json
+token.json
+service-account*.json
+license.key
+*.license
+
+# Generated / large
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+results/
+logs/
+*.sqlite3
+*.docx
+*.pdf
