@@ -1,19 +1,26 @@
-# Core framework
-fastapi>=0.104.0
-uvicorn>=0.24.0
-python-dotenv>=1.0.0
+<![CDATA[# ============================================================================
+# Core Dependencies — licence-docker v3.2
+# ============================================================================
+# Install: pip install -r requirements.txt
+# Python:  3.11+
+# ============================================================================
 
-# Licensing — cryptographic
-cryptography>=41.0.0
-PyJWT>=2.8.0
-ntplib>=0.4.0
+# --- Core Framework --------------------------------------------------------
+fastapi>=0.104.0,<1.0.0
+uvicorn[standard]>=0.24.0,<1.0.0
+python-dotenv>=1.0.0,<2.0.0
 
-# Hardware ID — platform-specific
-# Windows only (skip on macOS/Linux):
-#   pip install wmi pywin32
-# These are optional — the system falls back to WMIC/subprocess if missing
+# --- Licensing: Cryptographic ----------------------------------------------
+cryptography>=41.0.0,<44.0.0
+PyJWT>=2.8.0,<3.0.0
+ntplib>=0.4.0,<1.0.0
+
+# --- Hardware ID: Platform-Specific ----------------------------------------
+# Windows only — the system falls back to WMIC/subprocess if missing.
+# On macOS/Linux these are safely ignored by the environment marker.
 wmi>=1.5.1; sys_platform == 'win32'
 pywin32>=306; sys_platform == 'win32'
 
-# HTTP client for testing
-requests>=2.28.0
+# --- HTTP Client -----------------------------------------------------------
+requests>=2.28.0,<3.0.0
+]]>
