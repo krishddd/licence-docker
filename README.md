@@ -1,4 +1,4 @@
-<![CDATA[# 🔐 licence-docker
+# 🔐 licence-docker
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
@@ -383,4 +383,3 @@ is unrelated to this project's open-source license.
 <p align="center">
   Made with ❤️ by <a href="https://github.com/krishddd">krishddd</a>
 </p>
-]]>
